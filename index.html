@@ -6,42 +6,646 @@
 <meta name="theme-color" content="#0b1220">
 <title>Wildlands 3D</title>
 <style>
-*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#0b1220;color:#fff;font:14px system-ui,sans-serif;touch-action:none;user-select:none}#game{position:fixed;inset:0;width:100%;height:100%;display:block}#hud{position:fixed;z-index:2;top:max(10px,env(safe-area-inset-top));left:10px;padding:8px 10px;border-radius:10px;background:#07101bcc;font-size:13px;text-shadow:0 1px 3px #000}.meter{display:flex;align-items:center;gap:7px;margin:4px 0}.meter span{width:48px}.track{width:100px;height:9px;background:#222;border-radius:6px;overflow:hidden}.track i{display:block;width:100%;height:100%;background:#e5484d}.track #hunger{background:#f5a524}#day,#inventory,#tools{margin-top:5px}#map{position:fixed;z-index:2;right:10px;top:max(10px,env(safe-area-inset-top));width:90px;height:90px;border:1px solid #ffffff66;border-radius:9px;background:#10251cdd}#controls{position:fixed;z-index:4;right:12px;bottom:max(12px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(2,76px);gap:7px}button{min-height:50px;border:1px solid #ffffff30;border-radius:12px;background:#243248e8;color:#fff;font:700 13px system-ui,sans-serif;touch-action:manipulation}button:active{background:#52657d}#craftMenu{position:fixed;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(2,minmax(130px,160px));gap:8px;max-height:75vh;overflow:auto;padding:10px;border-radius:14px;background:#07101bf2}#craftMenu.hidden,#gameOver.hidden{display:none}#craftMenu button{min-height:58px}small{display:block;font-size:10px;font-weight:400;opacity:.8}#message{position:fixed;z-index:3;left:15%;right:15%;top:22%;text-align:center;font-weight:700;text-shadow:0 2px 4px #000;pointer-events:none}#gameOver{position:fixed;z-index:10;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#000c;text-align:center}#gameOver h1{margin:0}#gameOver button{padding:0 24px}@media(max-width:500px){#controls{grid-template-columns:repeat(2,68px);gap:6px}#map{width:78px;height:78px}}
+  * { box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; margin: 0; overflow: hidden;
+    background: #0b1220; color: white; font: 14px system-ui, sans-serif;
+    touch-action: none; user-select: none;
+  }
+  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #hud {
+    position: fixed; z-index: 5; top: max(10px, env(safe-area-inset-top)); left: 10px;
+    padding: 8px 10px; border-radius: 10px; background: rgba(7, 16, 27, .75);
+    font-size: 13px; text-shadow: 0 1px 3px #000;
+  }
+  .meter { display: flex; align-items: center; gap: 7px; margin: 4px 0; }
+  .meter span { width: 52px; }
+  .track { width: 110px; height: 10px; background: #212a32; border-radius: 6px; overflow: hidden; }
+  .track i { display: block; width: 100%; height: 100%; }
+  #health { background: #e5484d; }
+  #hunger { background: #f5a524; }
+  #inventory, #tools, #day { margin-top: 4px; }
+  #map { position: fixed; z-index: 5; right: 10px; top: max(10px, env(safe-area-inset-top)); width: 90px; height: 90px; border: 1px solid rgba(255,255,255,.5); border-radius: 10px; background: rgba(16,37,28,.8); }
+  #controls {
+    position: fixed; z-index: 6; right: 12px; bottom: max(12px, env(safe-area-inset-bottom));
+    display: grid; grid-template-columns: repeat(2, 76px); gap: 7px;
+  }
+  button {
+    min-height: 50px; border: 1px solid rgba(255,255,255,.3); border-radius: 12px;
+    background: rgba(36, 50, 72, .9); color: white; font: 700 13px system-ui, sans-serif;
+    touch-action: manipulation;
+  }
+  button:active { background: rgba(82, 101, 125, .9); }
+  #craftMenu {
+    position: fixed; z-index: 7; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    display: grid; grid-template-columns: repeat(2, minmax(130px, 160px)); gap: 8px;
+    max-height: 75vh; overflow: auto; padding: 10px; border-radius: 14px; background: rgba(7,16,27,.94);
+  }
+  #craftMenu.hidden, #gameOver.hidden { display: none; }
+  #craftMenu button { min-height: 58px; }
+  small { display: block; font-size: 10px; font-weight: 400; opacity: .8; }
+  #message {
+    position: fixed; z-index: 4; left: 15%; right: 15%; top: 22%;
+    text-align: center; font-weight: 700; text-shadow: 0 2px 4px #000; pointer-events: none;
+  }
+  #gameOver {
+    position: fixed; z-index: 10; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(0,0,0,.75); text-align: center;
+  }
+  #gameOver h1 { margin: 0; }
+  #gameOver button { padding: 0 24px; }
+  @media (max-width: 500px) {
+    #controls { grid-template-columns: repeat(2, 68px); gap: 6px; }
+    #map { width: 78px; height: 78px; }
+  }
 </style>
 </head>
 <body>
-<canvas id="game" aria-label="Wildlands 3D game"></canvas>
-<section id="hud" aria-live="polite"><div class="meter"><span>Health</span><div class="track"><i id="health"></i></div></div><div class="meter"><span>Hunger</span><div class="track"><i id="hunger"></i></div></div><div id="day">Day 1 · Daytime</div><div id="inventory">Wood 0 · Stone 0 · Food 3</div><div id="tools"></div></section>
-<canvas id="map" width="90" height="90" aria-label="Minimap"></canvas><div id="message" role="status"></div>
-<div id="controls"><button id="act">Gather</button><button id="eat">Eat</button><button id="craft">Craft</button><button id="jump">Jump</button><button id="place">Block</button><button id="fire">Campfire</button></div>
-<div id="craftMenu" class="hidden"><button data-craft="spear">Spear<small>3 wood · 2 stone</small></button><button data-craft="axe">Axe<small>4 wood · 3 stone</small></button><button data-craft="pickaxe">Pickaxe<small>4 wood · 4 stone</small></button><button data-craft="meal">Cook meal<small>1 food</small></button><button data-craft="house">Build house<small>20 wood · 10 stone</small></button><button data-craft="sleep">Sleep<small>At night near house</small></button></div>
-<div id="gameOver" class="hidden"><h1>You did not survive</h1><p id="finalDay"></p><button id="restart">Try again</button></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-(()=>{'use strict';const $=id=>document.getElementById(id);if(!window.THREE){$('message').textContent='Three.js could not load. Check your internet connection and reload.';return}
-const renderer=new THREE.WebGLRenderer({canvas:$('game'),antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.outputEncoding=THREE.sRGBEncoding;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x87b9d1);scene.fog=new THREE.Fog(0x87b9d1,45,180);const camera=new THREE.PerspectiveCamera(60,1,.1,300);const hemi=new THREE.HemisphereLight(0xd8efff,0x36472a,1.1);scene.add(hemi);const sun=new THREE.DirectionalLight(0xfff0cc,1.5);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-35,right:35,top:35,bottom:-35});scene.add(sun,sun.target);
-const height=(x,z)=>Math.sin(x*.035)*1.5+Math.cos(z*.03)*1.3+Math.sin((x+z)*.018)*1.2-.7;const geo=new THREE.PlaneGeometry(500,500,100,100);geo.rotateX(-Math.PI/2);const pos=geo.attributes.position,cols=[];for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i),y=height(x,z);pos.setY(i,y);const c=new THREE.Color().setHSL(.27+Math.max(0,y)*.006,.42,.25+Math.random()*.06);cols.push(c.r,c.g,c.b)}geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));geo.computeVertexNormals();const ground=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}));ground.receiveShadow=true;scene.add(ground);const water=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshStandardMaterial({color:0x347ca0,transparent:true,opacity:.64,roughness:.3}));water.rotation.x=-Math.PI/2;water.position.y=-2.7;scene.add(water);
-let seed=41;const rand=()=>{seed=seed*16807%2147483647;return(seed-1)/2147483646};const mat=c=>new THREE.MeshLambertMaterial({color:c}),resources=[];
-function makeResource(type,x,z){const g=new THREE.Group();if(type==='tree'){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.25,.35,2.2,6),mat(0x694323));trunk.position.y=1.1;g.add(trunk);for(const [y,s,c] of [[3,1,0x236b32],[4.1,.72,0x32833d]]){const crown=new THREE.Mesh(new THREE.ConeGeometry(1.55*s,2.5*s,7),mat(c));crown.position.y=y;g.add(crown)}}else if(type==='rock'){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.85),mat(0x8c929a));r.position.y=.55;r.scale.set(1.25,.8,1);g.add(r)}else{const b=new THREE.Mesh(new THREE.SphereGeometry(.65,8,6),mat(0x28723a));b.position.y=.5;g.add(b);for(let i=0;i<5;i++){const berry=new THREE.Mesh(new THREE.SphereGeometry(.11,6,5),mat(0xd6336c));berry.position.set(Math.cos(i*1.25)*.55,.65+Math.sin(i)*.18,Math.sin(i*1.25)*.55);g.add(berry)}}g.position.set(x,height(x,z),z);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});scene.add(g);const hp=type==='tree'?3:type==='rock'?4:1;resources.push({type,x,z,hp,max:hp,mesh:g,alive:true})}
-for(const[type,count]of[['tree',110],['rock',75],['berry',60]])for(let i=0;i<count;i++){const x=(rand()-.5)*190,z=(rand()-.5)*190;if(Math.hypot(x,z)<11||height(x,z)<-2.1){i--;continue}makeResource(type,x,z)}
-const grass=new THREE.InstancedMesh(new THREE.ConeGeometry(.12,.48,4),mat(0x3e8039),1700),dummy=new THREE.Object3D();for(let i=0;i<1700;i++){const x=(rand()-.5)*180,z=(rand()-.5)*180;dummy.position.set(x,height(x,z)+.2,z);dummy.rotation.y=rand()*Math.PI*2;dummy.scale.setScalar(.5+rand());dummy.updateMatrix();grass.setMatrixAt(i,dummy.matrix)}scene.add(grass);
-const player=new THREE.Group(),body=new THREE.Mesh(new THREE.BoxGeometry(.8,1.2,.45),mat(0x3b5bdb)),head=new THREE.Mesh(new THREE.BoxGeometry(.42,.42,.42),mat(0xffcc99)),legs=[];body.position.y=.8;head.position.y=1.65;player.add(body,head);for(const x of[-.22,.22]){const l=new THREE.Mesh(new THREE.BoxGeometry(.28,.65,.3),mat(0x242424));l.position.set(x,.3,0);player.add(l);legs.push(l)}player.position.set(0,height(0,0),0);player.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(player);
-const inventory={wood:0,stone:0,food:3},tools={spear:false,axe:false,pickaxe:false},houses=[],fires=[];let meals=0,hp=100,hunger=100,time=0,facing=0,jumpV=0,grounded=true,msgTime=0,hungerTick=0,nightTick=0,ended=false;const DAY=120,keys=Object.create(null);let joyId=null,joyOrigin=null,mx=0,mz=0;
-function say(t){$('message').textContent=t;msgTime=2.2}function hud(){ $('health').style.width=Math.max(0,hp)+'%';$('hunger').style.width=Math.max(0,hunger)+'%';$('inventory').textContent=`Wood ${inventory.wood} · Stone ${inventory.stone} · Food ${inventory.food}`;$('tools').textContent=Object.keys(tools).filter(k=>tools[k]).map(k=>'✓ '+k).join('  ')}function spend(w,s){if(inventory.wood<w||inventory.stone<s){say(`Need ${w} wood and ${s} stone`);return false}inventory.wood-=w;inventory.stone-=s;hud();return true}
-function nearest(){let found=null,d0=4;for(const r of resources)if(r.alive){const d=Math.hypot(r.x-player.position.x,r.z-player.position.z);if(d<d0){found=r;d0=d}}return found}function gather(){const r=nearest();if(!r){say('Move closer to a tree, rock, or berry bush');return}let damage=tools.spear?2:1;if(r.type==='tree'&&tools.axe)damage+=2;if(r.type==='rock'&&tools.pickaxe)damage+=2;r.hp-=damage;r.mesh.scale.setScalar(Math.max(.25,r.hp/r.max));if(r.hp<=0){r.alive=false;scene.remove(r.mesh);if(r.type==='tree'){inventory.wood+=tools.axe?5:3;say('Collected wood')}else if(r.type==='rock'){inventory.stone+=tools.pickaxe?5:3;say('Collected stone')}else{inventory.food++;say('Collected food')}hud()}else say('Gathering…')}
-function eat(){if(meals){meals--;hunger=Math.min(100,hunger+40);say('Ate a cooked meal')}else if(inventory.food){inventory.food--;hunger=Math.min(100,hunger+25);say('Ate food')}else say('No food available');hud()}function craftTool(n,w,s){if(tools[n]){say(`You already have a ${n}`);return}if(spend(w,s)){tools[n]=true;say(`Crafted ${n}`);hud()}}
-function house(){if(!spend(20,10))return;const x=player.position.x+Math.sin(facing)*4,z=player.position.z+Math.cos(facing)*4,g=new THREE.Group(),add=(w,h,d,c,px,py,pz)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(px,py,pz);m.castShadow=true;g.add(m)};add(5,.2,5,0x75502f,0,.1,0);add(.25,2.4,5,0x8b5a2b,-2.35,1.3,0);add(.25,2.4,5,0x8b5a2b,2.35,1.3,0);add(5,2.4,.25,0x8b5a2b,0,1.3,-2.35);add(5,2.4,.25,0x8b5a2b,0,1.3,2.35);add(5.5,.3,5.5,0x493729,0,2.65,0);g.position.set(x,height(x,z),z);scene.add(g);houses.push({x,z});say('House built — shelter from the night')}
-function block(){if(!inventory.wood){say('Need 1 wood');return}inventory.wood--;const x=player.position.x+Math.sin(facing)*2,z=player.position.z+Math.cos(facing)*2,b=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat(0x8b5a2b));b.position.set(x,height(x,z)+.5,z);b.castShadow=true;scene.add(b);hud();say('Block placed')}
-function campfire(){if(inventory.wood<4){say('Need 4 wood');return}inventory.wood-=4;hud();const x=player.position.x+Math.sin(facing)*2,z=player.position.z+Math.cos(facing)*2,g=new THREE.Group();for(const a of[-.65,.65]){const log=new THREE.Mesh(new THREE.BoxGeometry(.9,.16,.16),mat(0x55351e));log.position.y=.16;log.rotation.y=a;g.add(log)}const flame=new THREE.Mesh(new THREE.ConeGeometry(.25,.65,6),new THREE.MeshBasicMaterial({color:0xff7b21}));flame.position.y=.55;g.add(flame);const light=new THREE.PointLight(0xff8a35,1.6,14);light.position.y=1;g.add(light);g.position.set(x,height(x,z),z);scene.add(g);fires.push({flame,light});say('Campfire built')}
-function sleep(){if((time%DAY)/DAY<.72){say('You can only sleep at night');return}if(!houses.some(h=>Math.hypot(h.x-player.position.x,h.z-player.position.z)<7)){say('You need to be near your house');return}time=Math.ceil(time/DAY)*DAY;hp=Math.min(100,hp+30);hunger=Math.max(35,hunger);say('Slept until morning');hud()}function craft(action){if(action==='spear')craftTool('spear',3,2);if(action==='axe')craftTool('axe',4,3);if(action==='pickaxe')craftTool('pickaxe',4,4);if(action==='meal'){if(!inventory.food)say('Need 1 food to cook');else{inventory.food--;meals++;hud();say('Meal cooked')}}if(action==='house')house();if(action==='sleep')sleep()}
-$('act').onclick=gather;$('eat').onclick=eat;$('craft').onclick=()=>$('craftMenu').classList.toggle('hidden');$('jump').onclick=()=>{if(grounded){jumpV=7;grounded=false}};$('place').onclick=block;$('fire').onclick=campfire;$('craftMenu').onclick=e=>{const b=e.target.closest('[data-craft]');if(b)craft(b.dataset.craft)};$('restart').onclick=()=>location.reload();document.querySelectorAll('button').forEach(b=>b.addEventListener('pointerdown',e=>e.stopPropagation()));
-window.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='KeyE')gather();if(e.code==='KeyF')eat();if(e.code==='KeyC')$('craftMenu').classList.toggle('hidden');if(e.code==='Space'&&grounded){jumpV=7;grounded=false}if(e.code==='Escape')$('craftMenu').classList.add('hidden')});window.addEventListener('keyup',e=>keys[e.code]=false);
-window.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||e.clientX>=innerWidth*.55||joyId!==null)return;joyId=e.pointerId;joyOrigin={x:e.clientX,y:e.clientY}});window.addEventListener('pointermove',e=>{if(e.pointerId!==joyId)return;const dx=e.clientX-joyOrigin.x,dy=e.clientY-joyOrigin.y,len=Math.max(1,Math.hypot(dx,dy)),amp=Math.min(1,len/45);mx=dx/len*amp;mz=dy/len*amp});function release(e){if(e.pointerId!==joyId)return;joyId=null;joyOrigin=null;mx=mz=0}window.addEventListener('pointerup',release);window.addEventListener('pointercancel',release);
-const map=$('map').getContext('2d');function drawMap(){const w=90;map.fillStyle='#183523';map.fillRect(0,0,w,w);for(const r of resources)if(r.alive){map.fillStyle=r.type==='tree'?'#58b957':r.type==='rock'?'#c1c7ce':'#e35b88';map.fillRect(w/2+(r.x-player.position.x)*.55,w/2+(r.z-player.position.z)*.55,2,2)}map.fillStyle='#fff';map.beginPath();map.arc(45,45,3,0,Math.PI*2);map.fill()}function die(){if(ended)return;ended=true;$('finalDay').textContent=`You survived until Day ${Math.floor(time/DAY)+1}.`;$('gameOver').classList.remove('hidden')}
-function update(dt){if(ended)return;time+=dt;const day=Math.floor(time/DAY)+1,phase=(time%DAY)/DAY,daylight=phase<.72;$('day').textContent=`Day ${day} · ${daylight?'Daytime':'Night'}`;const power=daylight?1:.22;hemi.intensity=.25+power*.85;sun.intensity=power*1.4;const sky=new THREE.Color().lerpColors(new THREE.Color(0x101a35),new THREE.Color(0x87b9d1),power);scene.background.copy(sky);scene.fog.color.copy(sky);sun.position.set(player.position.x+30*Math.cos(phase*Math.PI*2),35,player.position.z+30*Math.sin(phase*Math.PI*2));const ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+mx,iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+mz,len=Math.hypot(ix,iz);if(len>.08){const dx=ix/Math.max(1,len),dz=iz/Math.max(1,len),speed=keys.ShiftLeft||keys.ShiftRight?7:5;player.position.x+=dx*speed*dt;player.position.z+=dz*speed*dt;facing=Math.atan2(dx,dz);player.rotation.y=facing;legs[0].rotation.x=Math.sin(time*10)*.5;legs[1].rotation.x=-legs[0].rotation.x}else legs[0].rotation.x=legs[1].rotation.x=0;const gy=height(player.position.x,player.position.z);if(!grounded){jumpV-=18*dt;player.position.y+=jumpV*dt;if(player.position.y<=gy){player.position.y=gy;jumpV=0;grounded=true}}else player.position.y=gy;hungerTick+=dt;if(hungerTick>=5){hungerTick-=5;hunger=Math.max(0,hunger-1);if(!hunger)hp=Math.max(0,hp-3)}if(!daylight&&!houses.some(h=>Math.hypot(h.x-player.position.x,h.z-player.position.z)<6)){nightTick+=dt;if(nightTick>=8){nightTick-=8;hp=Math.max(0,hp-2)}}else nightTick=0;for(const f of fires){f.flame.scale.y=.85+Math.sin(time*9)*.15;f.light.intensity=1.4+Math.sin(time*11)*.2}const target=new THREE.Vector3(player.position.x-Math.sin(facing)*9,player.position.y+5,player.position.z-Math.cos(facing)*9);camera.position.lerp(target,Math.min(1,dt*5));camera.lookAt(player.position.x,player.position.y+1,player.position.z);if(msgTime>0&&(msgTime-=dt)<=0)$('message').textContent='';hud();if(hp<=0)die()}
-function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}window.addEventListener('resize',resize);resize();let prev=performance.now(),mapTick=0;function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-prev)/1000,.05);prev=now;update(dt);mapTick+=dt;if(mapTick>.2){drawMap();mapTick=0}renderer.render(scene,camera)}hud();requestAnimationFrame(frame);
-})();
-</script>
+  <canvas id="game" aria-label="Wildlands 3D game"></canvas>
+  <div id="hud" aria-live="polite">
+    <div class="meter"><span>Health</span><div class="track"><i id="health"></i></div></div>
+    <div class="meter"><span>Hunger</span><div class="track"><i id="hunger"></i></div></div>
+    <div id="day">Day 1 · Daytime</div>
+    <div id="inventory">Wood 0 · Stone 0 · Food 3</div>
+    <div id="tools"></div>
+  </div>
+  <canvas id="map" width="90" height="90" aria-label="Map"></canvas>
+  <div id="message" role="status"></div>
+  <div id="controls">
+    <button id="act">Gather</button>
+    <button id="eat">Eat</button>
+    <button id="craft">Craft</button>
+    <button id="jump">Jump</button>
+    <button id="place">Block</button>
+    <button id="fire">Campfire</button>
+  </div>
+  <div id="craftMenu" class="hidden">
+    <button data-craft="spear">Spear<small>3 wood · 2 stone</small></button>
+    <button data-craft="axe">Axe<small>4 wood · 3 stone</small></button>
+    <button data-craft="pickaxe">Pickaxe<small>4 wood · 4 stone</small></button>
+    <button data-craft="meal">Cook meal<small>1 food</small></button>
+    <button data-craft="house">Build house<small>20 wood · 10 stone</small></button>
+    <button data-craft="sleep">Sleep<small>At night near house</small></button>
+  </div>
+  <div id="gameOver" class="hidden">
+    <h1>You did not survive</h1>
+    <p id="finalDay"></p>
+    <button id="restart">Try again</button>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    (() => {
+      'use strict';
+      const $ = (id) => document.getElementById(id);
+      if (!window.THREE) {
+        $('message').textContent = 'Three.js failed to load. Check your internet connection and reload.';
+        return;
+      }
+
+      const renderer = new THREE.WebGLRenderer({ canvas: $('game'), antialias: true });
+      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x7eb7d9);
+      scene.fog = new THREE.Fog(0x7eb7d9, 35, 180);
+      const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
+
+      const hemi = new THREE.HemisphereLight(0xdff0ff, 0x2c4022, 1.1);
+      scene.add(hemi);
+      const sun = new THREE.DirectionalLight(0xfff0c8, 1.5);
+      sun.castShadow = true;
+      sun.shadow.mapSize.set(1024, 1024);
+      sun.shadow.camera.left = sun.shadow.camera.bottom = -35;
+      sun.shadow.camera.right = sun.shadow.camera.top = 35;
+      scene.add(sun, sun.target);
+
+      const terrainHeight = (x, z) => Math.sin(x * 0.035) * 1.5 + Math.cos(z * 0.03) * 1.3 + Math.sin((x + z) * 0.018) * 1.2 - 0.7;
+
+      const groundGeo = new THREE.PlaneGeometry(500, 500, 120, 120);
+      groundGeo.rotateX(-Math.PI / 2);
+      const groundPos = groundGeo.attributes.position;
+      const groundColors = [];
+      for (let i = 0; i < groundPos.count; i++) {
+        const x = groundPos.getX(i), z = groundPos.getZ(i), y = terrainHeight(x, z);
+        groundPos.setY(i, y);
+        const color = new THREE.Color().setHSL(0.28 + Math.max(0, y) * 0.004, 0.42, 0.25 + Math.random() * 0.07);
+        groundColors.push(color.r, color.g, color.b);
+      }
+      groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(groundColors, 3));
+      groundGeo.computeVertexNormals();
+      const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }));
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      const water = new THREE.Mesh(
+        new THREE.PlaneGeometry(500, 500),
+        new THREE.MeshStandardMaterial({ color: 0x2d6d9a, transparent: true, opacity: 0.7, roughness: 0.4 })
+      );
+      water.rotation.x = -Math.PI / 2;
+      water.position.y = -2.7;
+      scene.add(water);
+
+      const materialCache = {};
+      const mat = (color) => {
+        if (!materialCache[color]) materialCache[color] = new THREE.MeshLambertMaterial({ color });
+        return materialCache[color];
+      };
+
+      const state = {
+        inv: { wood: 0, stone: 0, food: 3 },
+        tools: { spear: false, axe: false, pickaxe: false },
+        hp: 100,
+        hunger: 100,
+        time: 0,
+        cooked: 0,
+        houses: [],
+        fires: [],
+        resources: [],
+        enemies: [],
+        lastAttack: 0,
+        lastGather: 0,
+        facing: 0,
+        grounded: true,
+        velY: 0,
+        over: false
+      };
+
+      const keys = Object.create(null);
+      let moveX = 0, moveY = 0, joyId = null, joyOrigin = null;
+
+      const player = new THREE.Group();
+      const pBody = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.45), mat(0x3b5bdb));
+      pBody.position.y = 0.8;
+      const pHead = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 0.42), mat(0xffcc99));
+      pHead.position.y = 1.65;
+      player.add(pBody, pHead);
+      const legs = [];
+      for (const x of [-0.22, 0.22]) {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.65, 0.3), mat(0x242424));
+        leg.position.set(x, 0.3, 0);
+        player.add(leg);
+        legs.push(leg);
+      }
+      player.position.set(0, terrainHeight(0, 0), 0);
+      scene.add(player);
+      player.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+
+      function say(text) {
+        $('message').textContent = text;
+        $('message').style.opacity = '1';
+        setTimeout(() => { $('message').style.opacity = '0'; }, 1800);
+      }
+
+      function refreshHud() {
+        $('health').style.width = `${Math.max(0, state.hp)}%`;
+        $('hunger').style.width = `${Math.max(0, state.hunger)}%`;
+        $('inventory').textContent = `Wood ${state.inv.wood} · Stone ${state.inv.stone} · Food ${state.inv.food}`;
+        const owned = Object.keys(state.tools).filter((k) => state.tools[k]).map((k) => `✓ ${k}`);
+        $('tools').textContent = owned.length ? owned.join('  ') : 'No tools';
+      }
+
+      function spawnResource(type, x, z) {
+        const group = new THREE.Group();
+        if (type === 'tree') {
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 2.2, 6), mat(0x694323));
+          trunk.position.y = 1.1; group.add(trunk);
+          for (const [y, s, c] of [[3, 1, 0x236b32], [4.1, 0.72, 0x32833d]]) {
+            const crown = new THREE.Mesh(new THREE.ConeGeometry(1.55 * s, 2.5 * s, 7), mat(c));
+            crown.position.y = y; group.add(crown);
+          }
+          group.userData.hp = 3; group.userData.max = 3; group.userData.kind = 'tree';
+        } else if (type === 'rock') {
+          const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.85), mat(0x8c929a));
+          rock.position.y = 0.55; rock.scale.set(1.25, 0.8, 1); group.add(rock);
+          group.userData.hp = 4; group.userData.max = 4; group.userData.kind = 'rock';
+        } else {
+          const bush = new THREE.Mesh(new THREE.SphereGeometry(0.65, 8, 6), mat(0x28723a));
+          bush.position.y = 0.5; group.add(bush);
+          for (let i = 0; i < 5; i++) {
+            const berry = new THREE.Mesh(new THREE.SphereGeometry(0.11, 6, 5), mat(0xd6336c));
+            berry.position.set(Math.cos(i * 1.25) * 0.55, 0.65 + Math.sin(i) * 0.18, Math.sin(i * 1.25) * 0.55);
+            group.add(berry);
+          }
+          group.userData.hp = 1; group.userData.max = 1; group.userData.kind = 'berry';
+        }
+        group.position.set(x, terrainHeight(x, z), z);
+        group.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        scene.add(group);
+        state.resources.push(group);
+      }
+
+      function placeWorld() {
+        for (const [type, count] of [['tree', 110], ['rock', 75], ['berry', 60]]) {
+          for (let i = 0; i < count; i++) {
+            const x = (Math.random() - 0.5) * 190, z = (Math.random() - 0.5) * 190;
+            if (Math.hypot(x, z) < 11 || terrainHeight(x, z) < -2.1) { i--; continue; }
+            spawnResource(type, x, z);
+          }
+        }
+
+        const grass = new THREE.InstancedMesh(new THREE.ConeGeometry(0.12, 0.48, 4), mat(0x3e8039), 1700);
+        const dummy = new THREE.Object3D();
+        let s = 41;
+        const rnd = () => {(s = s * 16807 % 2147483647); return (s - 1) / 2147483646;};
+        for (let i = 0; i < 1700; i++) {
+          const x = (rnd() - 0.5) * 180, z = (rnd() - 0.5) * 180;
+          dummy.position.set(x, terrainHeight(x, z) + 0.2, z);
+          dummy.rotation.y = rnd() * Math.PI * 2;
+          dummy.scale.setScalar(0.5 + rnd());
+          dummy.updateMatrix();
+          grass.setMatrixAt(i, dummy.matrix);
+        }
+        scene.add(grass);
+      }
+      placeWorld();
+
+      function spawnEnemy(x, z) {
+        const g = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.0, 0.45), mat(0xa12d2d));
+        body.position.y = 0.7; g.add(body);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 0.42), mat(0xd8b08a));
+        head.position.y = 1.45; g.add(head);
+        g.position.set(x, terrainHeight(x, z), z);
+        g.userData = { hp: 30, speed: 1.5 + Math.random() * 0.8, damage: 7 + Math.random() * 5, cooldown: 0 };
+        scene.add(g);
+        state.enemies.push(g);
+      }
+
+      for (let i = 0; i < 10; i++) {
+        const x = (Math.random() - 0.5) * 140, z = (Math.random() - 0.5) * 140;
+        if (Math.hypot(x, z) < 18) { i--; continue; }
+        spawnEnemy(x, z);
+      }
+
+      function spend(wood, stone) {
+        if (state.inv.wood < wood || state.inv.stone < stone) {
+          say(`Need ${wood} wood and ${stone} stone`);
+          return false;
+        }
+        state.inv.wood -= wood; state.inv.stone -= stone;
+        refreshHud();
+        return true;
+      }
+
+      function nearestResource() {
+        let best = null, bestDist = 4.2;
+        for (const res of state.resources) {
+          if (res.userData.hp <= 0) continue;
+          const d = Math.hypot(res.position.x - player.position.x, res.position.z - player.position.z);
+          if (d < bestDist) { best = res; bestDist = d; }
+        }
+        return best;
+      }
+
+      function nearestEnemy() {
+        let best = null, bestDist = 3.5;
+        for (const enemy of state.enemies) {
+          const d = Math.hypot(enemy.position.x - player.position.x, enemy.position.z - player.position.z);
+          if (d < bestDist) { best = enemy; bestDist = d; }
+        }
+        return best;
+      }
+
+      function gather() {
+        const res = nearestResource();
+        if (!res) { say('Nothing nearby to gather'); return; }
+        const d = Math.hypot(res.position.x - player.position.x, res.position.z - player.position.z);
+        if (d > 4.2) { say('Move closer to the resource'); return; }
+        let damage = state.tools.spear ? 2 : 1;
+        if (res.userData.kind === 'tree' && state.tools.axe) damage += 2;
+        if (res.userData.kind === 'rock' && state.tools.pickaxe) damage += 2;
+        res.userData.hp -= damage;
+        res.scale.setScalar(Math.max(0.22, res.userData.hp / res.userData.max));
+        if (res.userData.hp <= 0) {
+          scene.remove(res);
+          if (res.userData.kind === 'tree') {
+            state.inv.wood += state.tools.axe ? 5 : 3;
+            say('Collected wood');
+          } else if (res.userData.kind === 'rock') {
+            state.inv.stone += state.tools.pickaxe ? 5 : 3;
+            say('Collected stone');
+          } else {
+            state.inv.food += 1;
+            say('Collected food');
+          }
+          state.resources = state.resources.filter((r) => r !== res);
+          refreshHud();
+        } else {
+          say('Gathering…');
+        }
+      }
+
+      function attack() {
+        if (performance.now() - state.lastAttack < 500) return;
+        state.lastAttack = performance.now();
+        let target = null;
+        let targetDist = 3.2;
+        for (const enemy of state.enemies) {
+          const d = Math.hypot(enemy.position.x - player.position.x, enemy.position.z - player.position.z);
+          if (d < targetDist) { target = enemy; targetDist = d; }
+        }
+        if (!target) {
+          const res = nearestResource();
+          if (res && Math.hypot(res.position.x - player.position.x, res.position.z - player.position.z) <= 2.8) {
+            gather();
+            return;
+          }
+          say('No enemy in range');
+          return;
+        }
+        const damage = state.tools.spear ? 12 : 8;
+        target.userData.hp -= damage;
+        say('Hit enemy');
+        if (target.userData.hp <= 0) {
+          scene.remove(target);
+          state.enemies = state.enemies.filter((e) => e !== target);
+          state.inv.food += 1;
+          say('Enemy defeated');
+        }
+        refreshHud();
+      }
+
+      function eat() {
+        if (state.cooked > 0) {
+          state.cooked -= 1;
+          state.hunger = Math.min(100, state.hunger + 40);
+          say('Ate cooked meal');
+        } else if (state.inv.food > 0) {
+          state.inv.food -= 1;
+          state.hunger = Math.min(100, state.hunger + 25);
+          say('Ate food');
+        } else {
+          say('No food available');
+        }
+        refreshHud();
+      }
+
+      function craftTool(name, wood, stone) {
+        if (state.tools[name]) { say(`You already have a ${name}`); return; }
+        if (spend(wood, stone)) { state.tools[name] = true; say(`Crafted ${name}`); refreshHud(); }
+      }
+
+      function cookMeal() {
+        if (state.inv.food < 1) { say('Need 1 food to cook'); return; }
+        state.inv.food -= 1; state.cooked += 1; say('Meal cooked'); refreshHud();
+      }
+
+      function buildHouse() {
+        if (!spend(20, 10)) return;
+        const x = player.position.x + Math.sin(state.facing) * 4;
+        const z = player.position.z + Math.cos(state.facing) * 4;
+        const house = new THREE.Group();
+        const add = (w, h, d, c, px, py, pz) => {
+          const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c));
+          mesh.position.set(px, py, pz); mesh.castShadow = true; house.add(mesh);
+        };
+        add(5, 0.2, 5, 0x75502f, 0, 0.1, 0);
+        add(0.25, 2.4, 5, 0x8b5a2b, -2.35, 1.3, 0);
+        add(0.25, 2.4, 5, 0x8b5a2b, 2.35, 1.3, 0);
+        add(5, 2.4, 0.25, 0x8b5a2b, 0, 1.3, -2.35);
+        add(5, 2.4, 0.25, 0x8b5a2b, 0, 1.3, 2.35);
+        add(5.5, 0.3, 5.5, 0x493729, 0, 2.65, 0);
+        house.position.set(x, terrainHeight(x, z), z);
+        scene.add(house);
+        state.houses.push({ x, z });
+        say('House built');
+      }
+
+      function placeBlock() {
+        if (state.inv.wood < 1) { say('Need 1 wood'); return; }
+        state.inv.wood -= 1;
+        const x = player.position.x + Math.sin(state.facing) * 2;
+        const z = player.position.z + Math.cos(state.facing) * 2;
+        const block = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat(0x8b5a2b));
+        block.position.set(x, terrainHeight(x, z) + 0.5, z); block.castShadow = true; scene.add(block);
+        refreshHud(); say('Block placed');
+      }
+
+      function buildFire() {
+        if (state.inv.wood < 4) { say('Need 4 wood'); return; }
+        state.inv.wood -= 4;
+        const x = player.position.x + Math.sin(state.facing) * 2;
+        const z = player.position.z + Math.cos(state.facing) * 2;
+        const g = new THREE.Group();
+        for (const a of [-0.7, 0.7]) {
+          const log = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.16, 0.16), mat(0x55351e));
+          log.position.y = 0.16; log.rotation.y = a; g.add(log);
+        }
+        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 6), new THREE.MeshBasicMaterial({ color: 0xff7b21 }));
+        flame.position.y = 0.55; g.add(flame);
+        const light = new THREE.PointLight(0xff8a35, 1.4, 14); light.position.y = 1; g.add(light);
+        g.position.set(x, terrainHeight(x, z), z); scene.add(g);
+        state.fires.push({ flame, light });
+        refreshHud(); say('Campfire built');
+      }
+
+      function sleep() {
+        const phase = (state.time % 120) / 120;
+        const night = phase >= 0.72;
+        if (!night) { say('You can only sleep at night'); return; }
+        if (!state.houses.some((h) => Math.hypot(h.x - player.position.x, h.z - player.position.z) < 7)) { say('You need to be near your house'); return; }
+        state.time = Math.ceil(state.time / 120) * 120;
+        state.hp = Math.min(100, state.hp + 35);
+        state.hunger = Math.max(38, state.hunger);
+        say('You slept until morning'); refreshHud();
+      }
+
+      function craft(action) {
+        if (action === 'spear') craftTool('spear', 3, 2);
+        else if (action === 'axe') craftTool('axe', 4, 3);
+        else if (action === 'pickaxe') craftTool('pickaxe', 4, 4);
+        else if (action === 'meal') cookMeal();
+        else if (action === 'house') buildHouse();
+        else if (action === 'sleep') sleep();
+      }
+
+      function finishGame() {
+        $('finalDay').textContent = `You survived until Day ${Math.floor(state.time / 120) + 1}.`;
+        $('gameOver').classList.remove('hidden');
+      }
+
+      $('act').addEventListener('click', () => {
+        const enemy = nearestEnemy();
+        if (enemy && Math.hypot(enemy.position.x - player.position.x, enemy.position.z - player.position.z) < 3.1) attack();
+        else gather();
+      });
+      $('eat').addEventListener('click', eat);
+      $('jump').addEventListener('click', () => { if (state.grounded) { state.velY = 7; state.grounded = false; } });
+      $('place').addEventListener('click', placeBlock);
+      $('fire').addEventListener('click', buildFire);
+      $('craft').addEventListener('click', () => $('craftMenu').classList.toggle('hidden'));
+      $('craftMenu').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-craft]');
+        if (btn) { craft(btn.dataset.craft); $('craftMenu').classList.add('hidden'); }
+      });
+      $('restart').addEventListener('click', () => location.reload());
+      document.querySelectorAll('button').forEach((btn) => btn.addEventListener('pointerdown', (e) => e.stopPropagation()));
+
+      window.addEventListener('keydown', (e) => {
+        keys[e.code] = true;
+        if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+        if (e.repeat) return;
+        if (e.code === 'KeyE') {
+          const enemy = nearestEnemy();
+          if (enemy && Math.hypot(enemy.position.x - player.position.x, enemy.position.z - player.position.z) < 3.1) attack();
+          else gather();
+        }
+        if (e.code === 'KeyF') eat();
+        if (e.code === 'KeyC') $('craftMenu').classList.toggle('hidden');
+        if (e.code === 'Space' && state.grounded) { state.velY = 7; state.grounded = false; }
+        if (e.code === 'Escape') $('craftMenu').classList.add('hidden');
+      });
+      window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+      window.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' || e.clientX >= innerWidth * 0.55 || joyId !== null) return;
+        joyId = e.pointerId; joyOrigin = { x: e.clientX, y: e.clientY };
+      });
+      window.addEventListener('pointermove', (e) => {
+        if (e.pointerId !== joyId || joyOrigin === null) return;
+        const dx = e.clientX - joyOrigin.x; const dy = e.clientY - joyOrigin.y;
+        const len = Math.max(1, Math.hypot(dx, dy)); const a = Math.min(1, len / 45);
+        moveX = dx / len * a; moveY = dy / len * a;
+      });
+      function releaseJoy(e) {
+        if (e.pointerId !== joyId) return;
+        joyId = null; joyOrigin = null; moveX = 0; moveY = 0;
+      }
+      window.addEventListener('pointerup', releaseJoy);
+      window.addEventListener('pointercancel', releaseJoy);
+
+      const map = $('map').getContext('2d');
+      function drawMap() {
+        const size = 90;
+        map.fillStyle = '#183523';
+        map.fillRect(0, 0, size, size);
+        for (const res of state.resources) {
+          if (res.userData.hp <= 0) continue;
+          map.fillStyle = res.userData.kind === 'tree' ? '#58b957' : res.userData.kind === 'rock' ? '#c1c7ce' : '#d6336c';
+          map.fillRect(size / 2 + (res.position.x - player.position.x) * 0.45, size / 2 + (res.position.z - player.position.z) * 0.45, 2, 2);
+        }
+        for (const enemy of state.enemies) {
+          map.fillStyle = '#ff5555';
+          map.fillRect(size / 2 + (enemy.position.x - player.position.x) * 0.45, size / 2 + (enemy.position.z - player.position.z) * 0.45, 3, 3);
+        }
+        map.fillStyle = '#ffffff';
+        map.beginPath(); map.arc(size / 2, size / 2, 3, 0, Math.PI * 2); map.fill();
+      }
+
+      function updateEnemies(dt) {
+        for (const enemy of state.enemies) {
+          const dx = player.position.x - enemy.position.x;
+          const dz = player.position.z - enemy.position.z;
+          const range = Math.hypot(dx, dz);
+          enemy.userData.cooldown -= dt;
+          if (range > 0.1) {
+            const dirx = dx / range; const dirz = dz / range;
+            if (range < 18) {
+              enemy.position.x += dirx * enemy.userData.speed * dt;
+              enemy.position.z += dirz * enemy.userData.speed * dt;
+              enemy.rotation.y = Math.atan2(dirx, dirz);
+            }
+          }
+          if (range < 1.8 && enemy.userData.cooldown <= 0) {
+            state.hp = Math.max(0, state.hp - enemy.userData.damage);
+            enemy.userData.cooldown = 1.2;
+            say('Enemy hit you');
+          }
+        }
+      }
+
+      function update(dt) {
+        if (state.over) return;
+        state.time += dt;
+        const phase = (state.time % 120) / 120;
+        const daytime = phase < 0.72;
+        const dayNum = Math.floor(state.time / 120) + 1;
+        $('day').textContent = `Day ${dayNum} · ${daytime ? 'Daytime' : 'Night'}`;
+
+        const light = daytime ? 1 : 0.25;
+        hemi.intensity = 0.25 + light * 0.8;
+        sun.intensity = light * 1.4;
+        const sky = new THREE.Color().lerpColors(new THREE.Color(0x101a35), new THREE.Color(0x7eb7d9), light);
+        scene.background.copy(sky); scene.fog.color.copy(sky);
+        sun.position.set(player.position.x + 30 * Math.cos(phase * Math.PI * 2), 35, player.position.z + 30 * Math.sin(phase * Math.PI * 2));
+
+        const ix = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + moveX;
+        const iz = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.ArrowUp ? 1 : 0) + moveY;
+        const len = Math.hypot(ix, iz);
+        if (len > 0.08) {
+          const dx = ix / len; const dz = iz / len;
+          const speed = keys.ShiftLeft || keys.ShiftRight ? 7 : 5;
+          player.position.x += dx * speed * dt; player.position.z += dz * speed * dt;
+          state.facing = Math.atan2(dx, dz);
+          player.rotation.y = state.facing;
+          legs[0].rotation.x = Math.sin(state.time * 10) * 0.5;
+          legs[1].rotation.x = -legs[0].rotation.x;
+        } else {
+          legs[0].rotation.x = legs[1].rotation.x = 0;
+        }
+
+        const groundY = terrainHeight(player.position.x, player.position.z);
+        if (!state.grounded) {
+          state.velY -= 18 * dt;
+          player.position.y += state.velY * dt;
+          if (player.position.y <= groundY) {
+            player.position.y = groundY; state.velY = 0; state.grounded = true;
+          }
+        } else {
+          player.position.y = groundY;
+        }
+
+        if (state.hunger > 0) {
+          state.hunger = Math.max(0, state.hunger - dt * 0.5);
+        }
+        if (state.hunger <= 0) state.hp = Math.max(0, state.hp - dt * 2.5);
+
+        if (!daytime && !state.houses.some((h) => Math.hypot(h.x - player.position.x, h.z - player.position.z) < 6)) {
+          state.hp = Math.max(0, state.hp - dt * 1.5);
+        }
+
+        updateEnemies(dt);
+
+        for (const fire of state.fires) {
+          fire.flame.scale.y = 0.8 + Math.sin(state.time * 10) * 0.15;
+          fire.light.intensity = 1.5 + Math.sin(state.time * 12) * 0.2;
+        }
+
+        const targetPos = new THREE.Vector3(player.position.x - Math.sin(state.facing) * 9, player.position.y + 5, player.position.z - Math.cos(state.facing) * 9);
+        camera.position.lerp(targetPos, Math.min(1, dt * 5));
+        camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+
+        refreshHud();
+        drawMap();
+
+        if (state.hp <= 0) {
+          state.over = true;
+          finishGame();
+        }
+      }
+
+      function resize() {
+        renderer.setSize(innerWidth, innerHeight);
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      let previous = performance.now();
+      function frame(now) {
+        requestAnimationFrame(frame);
+        const dt = Math.min((now - previous) / 1000, 0.05);
+        previous = now;
+        update(dt);
+        renderer.render(scene, camera);
+      }
+      refreshHud();
+      requestAnimationFrame(frame);
+    })();
+  </script>
 </body>
 </html>
